@@ -22,22 +22,39 @@ YouTube IFrame APIの調査により、以下の理由が判明しました:
 2. **プレイヤーサイズによる自動選択** - YouTubeは埋め込みプレイヤーのサイズとネットワーク速度に基づいて画質を自動的に選択します。
 3. **Holodexの実装** - Holodexは複数動画を並べて表示するため、個々のプレイヤーサイズが小さくなり、結果として360pが選択されます。
 
-### この拡張機能の仕組み
+### この拡張機能の仕組み（v2 - 改良版）
+
+**重要な発見**: フルスクリーン表示時に画質変更が適用される理由は、iframeが実際に大きくレンダリングされ、YouTubeがそのサイズを検出して高画質オプションを有効化するためです。
+
+#### 核心的なトリック: iframe縮小表示
+
+1. **iframeを大きくレンダリング** - iframe自体は1280x720で実際にレンダリング
+2. **CSS transform: scaleで縮小表示** - 視覚的には小さく見えるが、内部は大きいまま
+3. **YouTubeが大きいサイズを検出** - 高画質オプションが有効化される
+
+この方法により、**フルスクリーンにしなくても高画質が利用可能**になります。
+
+#### 技術的実装
 
 1. **Content Script (`content.js`)**:
-   - Holodexページにスクリプトを注入
-   - YouTube iframeを検出し、URLパラメータを修正
-   - プレイヤーの最小サイズを設定するCSSを注入
+   - YouTube iframeを検出し、実際のサイズを1280x720に設定
+   - CSS `transform: scale()` で表示サイズを調整
+   - コンテナサイズに合わせて自動的にスケール計算
+   - `enablejsapi=1` パラメータを追加
 
 2. **Injected Script (`injected.js`)**:
-   - ページコンテキストで実行され、YouTube Player APIに直接アクセス
-   - `YT.Player`コンストラクタをラップし、プレイヤーオプションを修正
-   - 複数の方法で画質設定を試行
+   - `YT.Player`コンストラクタをインターセプト
+   - プレイヤー作成時に width/height を 1280x720 に強制
+   - 複数のフォールバック方法で画質設定を試行:
+     - `setPlaybackQuality()` (非推奨だが試行)
+     - `getAvailableQualityLevels()` で利用可能な画質を確認
+     - postMessage APIで直接コマンド送信
+     - 定期的な画質モニタリングと再適用
 
 3. **Popup UI (`popup.html`, `popup.js`)**:
-   - ユーザーが画質を選択できるインターフェース
+   - 画質選択インターフェース（360p〜4K）
    - 拡張機能の有効/無効切り替え
-   - 設定の保存と適用
+   - 設定の自動保存と同期
 
 ## 🚀 インストール方法
 
@@ -113,15 +130,33 @@ setHolodexQuality('hd1080');
 setHolodexQuality('hd2160');
 ```
 
-#### 現在の設定を確認
+#### デバッグ情報の詳細表示
+
+**v2の新機能**: 詳細なデバッグ情報を表示する関数:
 
 ```javascript
-// 拡張機能の設定を確認
-console.log(window.holodexQualityEnhancer.settings);
+// デバッグ情報を表示
+debugHolodexQuality();
 
-// 管理されているプレイヤーの一覧
-console.log(window.holodexQualityEnhancer.players);
+// 出力例:
+// === Holodex Quality Enhancer Debug ===
+// Settings: {targetQuality: "hd1080", enabled: true}
+// Players: [...]
+// Player 0:
+//   Current quality: "hd1080"
+//   Available qualities: ["hd1080", "hd720", "large", "medium", "small"]
+//   Iframe: <iframe width="1280" height="720"...>
 ```
+
+#### iframeサイズの確認
+
+デバッグモードでiframeの実際のサイズを表示:
+
+```
+https://holodex.net/?debug=1
+```
+
+各プレイヤーの右上に緑色のテキストで「1280x720 @ 50%」のような情報が表示されます。
 
 ## ⚠️ 制限事項と注意点
 

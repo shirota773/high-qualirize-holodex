@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Holodex Video Quality Enhancer",
-  "version": "1.0.0",
-  "description": "Enables high-quality video playback on Holodex by manipulating YouTube player dimensions and quality settings",
+  "version": "1.1.0",
+  "description": "Enables high-quality video playback on Holodex by using iframe size manipulation with CSS transform scaling",
   "permissions": [
     "storage",
     "activeTab"

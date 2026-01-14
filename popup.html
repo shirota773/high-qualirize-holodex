@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holodex Video Quality Enhancer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .toggle-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.3);
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .quality-selector {
+      margin-bottom: 10px;
+    }
+
+    .quality-option {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .quality-option:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .quality-option.selected {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .quality-option input[type="radio"] {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .quality-label {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .quality-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .quality-desc {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .status {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .status-active {
+      background: rgba(76, 175, 80, 0.3);
+    }
+
+    .status-inactive {
+      background: rgba(244, 67, 54, 0.3);
+    }
+
+    .info {
+      font-size: 11px;
+      opacity: 0.8;
+      line-height: 1.5;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+    }
+
+    .info strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎬 Holodex Quality Enhancer</h1>
+      <div class="subtitle">動画品質を向上させる</div>
+    </header>
+
+    <div class="status" id="status">
+      <span id="status-text">読み込み中...</span>
+    </div>
+
+    <div class="section">
+      <div class="toggle-container">
+        <span class="toggle-label">拡張機能を有効化</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="enableToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">動画品質を選択</div>
+      <div class="quality-selector">
+        <label class="quality-option" data-quality="hd2160">
+          <input type="radio" name="quality" value="hd2160">
+          <div class="quality-label">
+            <span class="quality-name">4K (2160p)</span>
+            <span class="quality-desc">超高画質 - 要高速回線</span>
+          </div>
+        </label>
+
+        <label class="quality-option" data-quality="hd1440">
+          <input type="radio" name="quality" value="hd1440">
+          <div class="quality-label">
+            <span class="quality-name">1440p</span>
+            <span class="quality-desc">非常に高画質</span>
+          </div>
+        </label>
+
+        <label class="quality-option selected" data-quality="hd1080">
+          <input type="radio" name="quality" value="hd1080" checked>
+          <div class="quality-label">
+            <span class="quality-name">1080p (Full HD)</span>
+            <span class="quality-desc">高画質 - 推奨</span>
+          </div>
+        </label>
+
+        <label class="quality-option" data-quality="hd720">
+          <input type="radio" name="quality" value="hd720">
+          <div class="quality-label">
+            <span class="quality-name">720p (HD)</span>
+            <span class="quality-desc">標準画質</span>
+          </div>
+        </label>
+
+        <label class="quality-option" data-quality="large">
+          <input type="radio" name="quality" value="large">
+          <div class="quality-label">
+            <span class="quality-name">480p</span>
+            <span class="quality-desc">中画質</span>
+          </div>
+        </label>
+
+        <label class="quality-option" data-quality="medium">
+          <input type="radio" name="quality" value="medium">
+          <div class="quality-label">
+            <span class="quality-name">360p</span>
+            <span class="quality-desc">低画質 - デフォルト</span>
+          </div>
+        </label>
+      </div>
+
+      <button id="applyBtn">設定を適用してリロード</button>
+    </div>
+
+    <div class="section">
+      <div class="info">
+        <strong>💡 使い方:</strong>
+        1. 希望の画質を選択<br>
+        2. 「設定を適用」をクリック<br>
+        3. Holodexページが自動的にリロードされます<br><br>
+
+        <strong>⚠️ 注意:</strong>
+        YouTube APIの制限により、画質が変更されない場合があります。その場合は、プレイヤーを全画面表示にしてYouTubeの画質設定から手動で変更してください。
+      </div>
+    </div>
+
+    <div class="footer">
+      v1.0.0 | Holodex Video Quality Enhancer
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "holodex-quality-enhancer",
+  "version": "1.0.0",
+  "description": "Chrome extension to enable high-quality video playback on Holodex by manipulating YouTube player settings",
+  "main": "content.js",
+  "scripts": {
+    "build:icons": "node create-icons.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shirota773/high-qualirize-holodex"
+  },
+  "keywords": [
+    "chrome-extension",
+    "holodex",
+    "youtube",
+    "video-quality",
+    "vtuber",
+    "streaming"
+  ],
+  "author": "shirota773",
+  "license": "MIT",
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {}
+}

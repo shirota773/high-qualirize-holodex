@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-01-15
+
+### 🐛 Critical Bugfixes
+
+#### Fixed
+- **Videos Not Displaying**: Fixed CSS transform being applied too broadly
+  - Previous version applied styles to all iframes indiscriminately
+  - Videos were scaled but `overflow: hidden` made them invisible
+  - Now only processes YouTube video iframes specifically
+- **Chat Iframe Affected**: Chat display broken by transform scaling
+  - Added chat iframe detection and exclusion
+  - Checks for 'chat' or 'livechat' in iframe URL
+  - Verifies container is not chat-related before processing
+- **Over-Aggressive CSS**: Global iframe styles causing conflicts
+  - Removed blanket CSS rules for all iframes
+  - Now applies styles only to processed iframes via class marker
+  - Uses `holodex-enhanced-yt` class for targeted styling
+
+#### Changed
+- **Iframe Detection**: More selective iframe processing
+  - `checkAndEnhanceIframe()` function validates iframe type
+  - Skips non-YouTube iframes with logging
+  - Excludes chat/livechat iframes explicitly
+- **Container Detection**: Improved video container identification
+  - Prioritizes `[class*="player"]` containers
+  - Validates container dimensions (min 100x100)
+  - Excludes containers with 'chat' in class name
+- **CSS Injection**: Minimal CSS approach
+  - Only styles `iframe.holodex-enhanced-yt` class
+  - Removed global iframe dimension forcing
+  - Container overflow handled per-iframe in JS
+
+#### Technical Details
+- **Root Cause**: v1.1.0 applied `width: 1280px !important` to ALL YouTube iframes via CSS
+- **Side Effect**: Chat iframes and other elements received same treatment
+- **Visual Issue**: Large iframes with `overflow: hidden` on container = invisible content
+- **Solution**:
+  1. Remove global CSS rules
+  2. Add iframe type checking
+  3. Apply styles programmatically only to video iframes
+  4. Use class marker for CSS targeting
+
+### Code Changes
+- `content.js`: Complete rewrite of iframe selection logic
+- `injectStyles()`: Reduced to minimal class-based styles
+- Added `checkAndEnhanceIframe()`: Validation before processing
+- Added `findVideoContainer()`: Smart container detection with chat exclusion
+
+---
+
 ## [1.1.0] - 2026-01-14
 
 ### 🎉 Major Improvements
